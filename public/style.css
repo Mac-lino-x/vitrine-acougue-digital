@@ -1,0 +1,363 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* --- ESTILOS DA TELA DA TV --- */
+.body-tv {
+  background-color: #2b0404;
+  background-image: radial-gradient(circle at center, #6b0d0d 0%, #210303 100%);
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tv-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 10px;
+}
+
+/* Nome da carne no topo */
+.tv-titulo {
+  font-family: 'Impact', sans-serif;
+  font-size: 6.5vw;
+  letter-spacing: 4px;
+  color: #ffca28;
+  text-shadow: 4px 4px 0px #d21404, 8px 8px 15px rgba(0,0,0,0.9);
+  text-transform: uppercase;
+  text-align: center;
+  z-index: 10;
+  animation: pulsoTitulo 3s infinite ease-in-out;
+}
+
+.wrapper-promocao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+/* Display expandido cobrindo a maior parte da TV */
+.display-central {
+  position: relative;
+  width: 88vw;
+  height: 68vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 1. EFEITO DE EXPLOSÃO (Gira levemente e pulsa no fundo) */
+.img-explosao {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;
+  animation: animacaoExplosao 6s infinite ease-in-out;
+}
+
+/* 2. IMAGEM DA CARNE (Flutua e expande alternando com a explosão) */
+.img-carne {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 2;
+  filter: drop-shadow(0px 22px 20px rgba(0,0,0,0.9));
+  animation: animacaoCarne 5s infinite ease-in-out;
+}
+
+/* BLOCO DE PREÇO */
+.bloco-oferta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 20;
+  margin-top: -15px;
+  animation: animacaoPreco 4s infinite ease-in-out;
+}
+
+.badge-preco {
+  background: #fffa65;
+  color: #d21404;
+  border: 6px solid #fff;
+  border-radius: 24px;
+  padding: 8px 45px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.8);
+  transform: rotate(-3deg);
+  z-index: 21;
+}
+
+.cifra {
+  font-size: 3vw;
+  font-weight: 900;
+}
+
+.valor-preco {
+  font-family: 'Impact', sans-serif;
+  font-size: 8vw;
+  line-height: 1;
+}
+
+.unidade {
+  font-size: 2.5vw;
+  font-weight: 900;
+}
+
+.standby-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: auto;
+}
+
+.icon-acougue {
+  font-size: 80px;
+}
+
+/* ===================================================
+   ANIMAÇÕES HARMÔNICAS E ALTERNADAS (@keyframes)
+   =================================================== */
+
+/* Animação da Explosão: Pulsa tamanho, gira suavemente e varia brilho */
+@keyframes animacaoExplosao {
+  0% {
+    transform: scale(1.85) rotate(0deg);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(2.05) rotate(3deg);
+    filter: brightness(1.25);
+  }
+  100% {
+    transform: scale(1.85) rotate(0deg);
+    filter: brightness(1);
+  }
+}
+
+/* Animação da Carne: Flutuação vertical e aproximação (ritmo de 5s) */
+@keyframes animacaoCarne {
+  0% {
+    transform: translateY(0px) scale(1.65);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.75);
+  }
+  100% {
+    transform: translateY(0px) scale(1.65);
+  }
+}
+
+/* Animação do Preço: Leve inclinação e pulso de tamanho */
+@keyframes animacaoPreco {
+  0% {
+    transform: scale(1) rotate(-3deg);
+  }
+  50% {
+    transform: scale(1.06) rotate(-1deg);
+  }
+  100% {
+    transform: scale(1) rotate(-3deg);
+  }
+}
+
+/* Animação do Título */
+@keyframes pulsoTitulo {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+/* --- ESTILOS DO PAINEL DE CONTROLE (CELULAR) --- */
+.body-painel {
+  background: #121212;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 15px;
+}
+
+.controle-remoto {
+  width: 100%;
+  max-width: 450px;
+  background: #1e1e1e;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.topo-controle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+  padding-bottom: 12px;
+}
+
+.status-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #00e676;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00e676;
+}
+
+.status-texto {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+}
+
+.bloco-controle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label-controle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.btn-pilula {
+  background: #2a2a2a;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 12px 5px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-pilula.active {
+  background: #d21404;
+  color: #fff;
+  border-color: #ff4d4d;
+  box-shadow: 0 0 10px rgba(210, 20, 4, 0.4);
+}
+
+.display-preco-input {
+  display: flex;
+  align-items: center;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 5px 15px;
+}
+
+.cifra-input {
+  font-size: 20px;
+  font-weight: 900;
+  color: #ffca28;
+  margin-right: 10px;
+}
+
+.display-preco-input input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 900;
+  outline: none;
+}
+
+.btn-disparar {
+  background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+  color: #fff;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(229, 57, 53, 0.4);
+  margin-top: 5px;
+}
+
+.bloco-historico {
+  margin-top: 15px;
+}
+
+.lista-historico {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.item-historico {
+  background: #2a2a2a;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preco-tag {
+  display: block;
+  font-size: 12px;
+  color: #ffca28;
+}
+
+.btn-excluir {
+  background: transparent;
+  border: none;
+  color: #ff5252;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.sem-itens {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  padding: 10px;
+}

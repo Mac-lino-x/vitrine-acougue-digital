@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vitrine TV - Açougue</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Impact&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+</head>
+<body class="body-tv">
+
+  <div class="tv-container">
+    <!-- O Título do Topo agora exibe direto o Nome da Carne -->
+    <h1 id="tv-titulo" class="tv-titulo">CARREGANDO...</h1>
+
+    <!-- Display Principal de Promoção -->
+    <div id="wrapper-promocao" class="wrapper-promocao">
+      <div class="display-central">
+        <img src="assets/efeitos/explosao.png" class="img-explosao" alt="Efeito">
+        <img id="tv-img-carne" src="" class="img-carne" alt="Carne">
+      </div>
+
+      <!-- Bloco de Preço -->
+      <div class="bloco-oferta">
+        <div class="badge-preco" id="badge-preco">
+          <span class="cifra">R$</span>
+          <span id="tv-preco" class="valor-preco">00,00</span>
+          <span class="unidade">KG</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tela Elegante de Standby (Sem Promoções) -->
+    <div id="standby-box" class="standby-box">
+      <div class="icon-acougue">🥩</div>
+      <h2>OFERTAS DO DIA</h2>
+      <p>Aguardando o lançamento de promoções...</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://vitrine-acougue-digital-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let listaPromocoes = [];
+    let indiceAtual = 0;
+    let timerAlternancia = null;
+
+    function exibirPromocaoAtual() {
+      const wrapperPromocao = document.getElementById('wrapper-promocao');
+      const standbyBox = document.getElementById('standby-box');
+      const tvTitulo = document.getElementById('tv-titulo');
+
+      if (listaPromocoes.length === 0) {
+        wrapperPromocao.style.display = 'none';
+        standbyBox.style.display = 'flex';
+        tvTitulo.innerText = "VITRINE DIGITAL";
+        return;
+      }
+
+      standbyBox.style.display = 'none';
+      wrapperPromocao.style.display = 'flex';
+
+      if (indiceAtual >= listaPromocoes.length) {
+        indiceAtual = 0;
+      }
+
+      const item = listaPromocoes[indiceAtual];
+      // Exibe o NOME DA CARNE no topo no lugar de "OFERTA ESPECIAL"
+      tvTitulo.innerText = item.corte.toUpperCase();
+      document.getElementById('tv-img-carne').src = `assets/carnes/${item.imagem}`;
+      document.getElementById('tv-preco').innerText = item.preco;
+    }
+
+    function iniciarCarrossel() {
+      if (timerAlternancia) clearInterval(timerAlternancia);
+
+      timerAlternancia = setInterval(() => {
+        if (listaPromocoes.length > 1) {
+          indiceAtual = (indiceAtual + 1) % listaPromocoes.length;
+          exibirPromocaoAtual();
+        }
+      }, 20000);
+    }
+
+    onValue(ref(db, 'promocoes'), (snapshot) => {
+      const data = snapshot.val();
+      listaPromocoes = data ? Object.values(data) : [];
+      indiceAtual = 0;
+      exibirPromocaoAtual();
+      iniciarCarrossel();
+    });
+  </script>
+</body>
+</html>

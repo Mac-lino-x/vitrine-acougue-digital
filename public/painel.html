@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle da Vitrine</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/steak.png">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/color/180/steak.png">
+</head>
+<body class="body-painel">
+
+  <div class="controle-remoto">
+    <div class="topo-controle">
+      <div class="sensor-ir"></div>
+      <div class="status-box">
+        <span class="status-dot"></span>
+        <span class="status-texto">VITRINE CONECTADA</span>
+      </div>
+    </div>
+
+    <!-- 1. Categoria -->
+    <div class="bloco-controle">
+      <span class="label-controle">1. CATEGORIA</span>
+      <div class="selector-grid" id="grid-animais">
+        <button class="btn-pilula active" onclick="selecionarAnimal('boi')">Boi</button>
+        <button class="btn-pilula" onclick="selecionarAnimal('porco')">Porco</button>
+        <button class="btn-pilula" onclick="selecionarAnimal('frango')">Frango</button>
+      </div>
+    </div>
+
+    <!-- 2. Corte -->
+    <div class="bloco-controle">
+      <span class="label-controle">2. CORTE</span>
+      <div class="selector-grid" id="grid-cortes"></div>
+    </div>
+
+    <!-- 3. Preço -->
+    <div class="bloco-controle">
+      <span class="label-controle">3. PREÇO (R$ / KG)</span>
+      <div class="display-preco-input">
+        <span class="cifra-input">R$</span>
+        <input type="text" id="input-preco" placeholder="0,00" inputmode="numeric" oninput="formatarMoeda(this)">
+      </div>
+    </div>
+
+    <!-- Botão Principal -->
+    <button class="btn-disparar" onclick="adicionarPromocao()">
+      TRANSMITIR PARA TV
+    </button>
+
+    <!-- Histórico -->
+    <div class="bloco-controle bloco-historico">
+      <span class="label-controle">OFERTAS ATIVAS NA TV</span>
+      <div id="lista-historico" class="lista-historico"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://vitrine-acougue-digital-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const dadosAnimais = {
+      boi: {
+        cortes: [
+          { nome: "Picanha", arquivo: "picanha.png" },
+          { nome: "Alcatra", arquivo: "alcatra.png" },
+          { nome: "Contra Filé", arquivo: "contra_file.png" }
+        ]
+      },
+      porco: {
+        cortes: [
+          { nome: "Bisteca", arquivo: "bisteca.png" },
+          { nome: "Costela", arquivo: "costela_porco.png" },
+          { nome: "Lombo", arquivo: "lombo.png" }
+        ]
+      },
+      frango: {
+        cortes: [
+          { nome: "Peito de Frango", arquivo: "peito_frango.png" },
+          { nome: "Coxa de Frango", arquivo: "coxa_frango.png" },
+          { nome: "Asa de Frango", arquivo: "asa_frango.png" }
+        ]
+      }
+    };
+
+    let animalAtual = "boi";
+    let corteAtual = dadosAnimais.boi.cortes[0];
+
+    // Formatação de vírgula automática enquanto digita
+    window.formatarMoeda = function(input) {
+      let valor = input.value.replace(/\D/g, "");
+      if (!valor) {
+        input.value = "";
+        return;
+      }
+      valor = (parseInt(valor, 10) / 100).toFixed(2);
+      input.value = valor.replace(".", ",");
+    };
+
+    window.selecionarAnimal = function(animal) {
+      animalAtual = animal;
+      document.querySelectorAll('#grid-animais .btn-pilula').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      carregarCortes();
+    };
+
+    function carregarCortes() {
+      const container = document.getElementById('grid-cortes');
+      container.innerHTML = '';
+      const cortes = dadosAnimais[animalAtual].cortes;
+      corteAtual = cortes[0];
+
+      cortes.forEach((c, index) => {
+        const btn = document.createElement('button');
+        btn.className = `btn-pilula ${index === 0 ? 'active' : ''}`;
+        btn.innerText = c.nome;
+        btn.onclick = (e) => {
+          document.querySelectorAll('#grid-cortes .btn-pilula').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          corteAtual = c;
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    window.adicionarPromocao = function() {
+      const precoInput = document.getElementById('input-preco');
+      let precoFormatado = precoInput.value.trim();
+      
+      if (!precoFormatado) {
+        alert('Digite o preço da carne!');
+        return;
+      }
+
+      let precoNum = parseFloat(precoFormatado.replace(',', '.'));
+
+      if (isNaN(precoNum) || precoNum <= 0) {
+        alert('Digite um número válido maior que zero!');
+        return;
+      }
+
+      if (precoNum > 120) {
+        const confirma = confirm(`ATENÇÃO!\n\nR$ ${precoFormatado} é um preço MUITO ALTO para o KG de ${corteAtual.nome}.\n\nConfirmar este valor na TV?`);
+        if (!confirma) return;
+      } else if (precoNum < 10) {
+        const confirma = confirm(`ATENÇÃO!\n\nR$ ${precoFormatado} é um preço MUITO BAIXO.\n\nConfirmar este valor na TV?`);
+        if (!confirma) return;
+      }
+
+      push(ref(db, 'promocoes'), {
+        animal: animalAtual,
+        corte: corteAtual.nome,
+        imagem: corteAtual.arquivo,
+        preco: precoFormatado,
+        timestamp: Date.now()
+      }).then(() => {
+        precoInput.value = '';
+      });
+    };
+
+    window.removerPromocao = function(key) {
+      remove(ref(db, `promocoes/${key}`));
+    };
+
+    onValue(ref(db, 'promocoes'), (snapshot) => {
+      const container = document.getElementById('lista-historico');
+      container.innerHTML = '';
+      const data = snapshot.val();
+
+      if (!data) {
+        container.innerHTML = '<p class="sem-itens">Nenhuma oferta transmitida</p>';
+        return;
+      }
+
+      Object.keys(data).forEach((key) => {
+        const item = data[key];
+        const card = document.createElement('div');
+        card.className = 'item-historico';
+        card.innerHTML = `
+          <div>
+            <strong>${item.corte}</strong>
+            <span class="preco-tag">R$ ${item.preco} / KG</span>
+          </div>
+          <button class="btn-excluir" onclick="removerPromocao('${key}')">✕</button>
+        `;
+        container.appendChild(card);
+      });
+    });
+
+    carregarCortes();
+  </script>
+</body>
+</html>
