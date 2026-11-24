@@ -104,7 +104,7 @@
     document.getElementById('app').style.display = 'flex';
     document.getElementById('nome-loja').textContent = loja.nome.toUpperCase();
 
-    const linkTv = new URL(`tv/${loja.tv_token}`, document.baseURI).href;
+    const linkTv = new URL(`tv?t=${loja.tv_token}`, document.baseURI).href;
     document.getElementById('link-tv').textContent = linkTv;
     document.getElementById('btn-copiar').addEventListener('click', async (e) => {
       try {
