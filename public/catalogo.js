@@ -3,6 +3,18 @@
 // Para adicionar um produto: coloque o PNG em /assets/carnes/ e acrescente uma linha abaixo.
 // unidade: 'kg' | 'duzia' | 'bandeja'
 
+// TAMANHO DA CARNE NA TV (para as imagens novas)
+// Quanto o desenho ocupa da área de exibição. Menor = carne menor, maior = carne maior.
+// Valores sugeridos entre 0.35 e 0.70.
+export const TAMANHO_CARNE = 0.5;
+
+// Imagens que você já tinha: ficam exatamente como estavam (sem ajuste automático).
+export const IMAGENS_ORIGINAIS = new Set([
+  'picanha.png', 'alcatra.png', 'contra_file.png',
+  'bisteca.png', 'costela_porco.png', 'lombo.png',
+  'peito_frango.png', 'coxa_frango.png', 'asa_frango.png'
+]);
+
 export const UNIDADES = {
   kg:      { label: 'KG',      min: 10, max: 120 },
   duzia:   { label: 'DÚZIA',   min: 4,  max: 30 },

@@ -44,7 +44,7 @@
 
   <script type="module">
     import { supabase } from './config.js';
-    import { UNIDADES } from './catalogo.js';
+    import { UNIDADES, TAMANHO_CARNE, IMAGENS_ORIGINAIS } from './catalogo.js';
 
     // O link da TV é /tv/<token>
     const partes = location.pathname.split('/').filter(Boolean);
@@ -67,6 +67,49 @@
       tvTitulo.textContent = tituloTopo;
     }
 
+    // Mede quanto do quadro o desenho realmente ocupa (ignora a margem transparente)
+    const medidas = {};
+    function medirConteudo(arquivo) {
+      if (medidas[arquivo]) return medidas[arquivo];
+      medidas[arquivo] = new Promise((resolve) => {
+        const im = new Image();
+        im.onload = () => {
+          try {
+            const w = 200, h = Math.max(1, Math.round(200 * im.naturalHeight / im.naturalWidth));
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            const ctx = c.getContext('2d'); ctx.drawImage(im, 0, 0, w, h);
+            const d = ctx.getImageData(0, 0, w, h).data;
+            let x0 = w, y0 = h, x1 = -1, y1 = -1;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+              if (d[(y * w + x) * 4 + 3] > 16) {
+                if (x < x0) x0 = x; if (x > x1) x1 = x;
+                if (y < y0) y0 = y; if (y > y1) y1 = y;
+              }
+            }
+            if (x1 < x0) return resolve(1);
+            resolve(Math.max((x1 - x0 + 1) / w, (y1 - y0 + 1) / h));
+          } catch (e) { resolve(1); }
+        };
+        im.onerror = () => resolve(1);
+        im.src = `assets/carnes/${arquivo}`;
+      });
+      return medidas[arquivo];
+    }
+
+    function ajustarTamanho(imgEl, arquivo) {
+      if (IMAGENS_ORIGINAIS.has(arquivo)) {
+        imgEl.style.setProperty('--escala-carne', '1');
+        return;
+      }
+      imgEl.style.setProperty('--escala-carne', String(TAMANHO_CARNE));
+      medirConteudo(arquivo).then((fracao) => {
+        const atual = listaPromocoes[indiceAtual];
+        if (atual && atual.carne === arquivo) {
+          imgEl.style.setProperty('--escala-carne', String(Math.min(1, TAMANHO_CARNE / fracao)));
+        }
+      });
+    }
+
     function exibirPromocaoAtual() {
       if (listaPromocoes.length === 0) {
         mostrarStandby('OFERTAS DO DIA', 'Aguardando o lançamento de promoções...', 'VITRINE DIGITAL');
@@ -80,7 +123,9 @@
 
       const item = listaPromocoes[indiceAtual];
       tvTitulo.textContent = (item.corte || '').toUpperCase();
-      document.getElementById('tv-img-carne').src = `assets/carnes/${item.carne}`;
+      const imgCarne = document.getElementById('tv-img-carne');
+      ajustarTamanho(imgCarne, item.carne);
+      imgCarne.src = `assets/carnes/${item.carne}`;
       document.getElementById('tv-unidade').textContent = (UNIDADES[item.unidade] || UNIDADES.kg).label;
       document.getElementById('tv-preco').textContent = Number(item.preco).toFixed(2).replace('.', ',');
     }
