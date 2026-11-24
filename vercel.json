@@ -1,8 +1,11 @@
 {
   "version": 2,
+  "outputDirectory": "public",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/public/index.html" },
-    { "source": "/painel", "destination": "/public/painel.html" }
+    {
+      "source": "/tv/:token",
+      "destination": "/tv.html"
+    }
   ]
 }

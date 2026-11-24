@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // Define a base dos caminhos (funciona em /tv/TOKEN, /painel, /login e também em /public/...)
+    (function () {
+      var p = location.pathname, i = p.indexOf('/tv/');
+      var b = i >= 0 ? p.slice(0, i + 1) : p.replace(/[^\/]*$/, '');
+      document.write('<base href="' + b + '">');
+    })();
+  </script>
+  <title>Vitrine TV - Açougue</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Impact&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+</head>
+<body class="body-tv">
+
+  <div class="tv-container">
+    <h1 id="tv-titulo" class="tv-titulo">CARREGANDO...</h1>
+
+    <div id="wrapper-promocao" class="wrapper-promocao" style="display:none">
+      <div class="display-central">
+        <img src="assets/efeitos/explosao.png" class="img-explosao" alt="Efeito">
+        <img id="tv-img-carne" src="" class="img-carne" alt="Carne">
+      </div>
+
+      <div class="bloco-oferta">
+        <div class="badge-preco" id="badge-preco">
+          <span class="cifra">R$</span>
+          <span id="tv-preco" class="valor-preco">00,00</span>
+          <span class="unidade" id="tv-unidade">KG</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="standby-box" class="standby-box">
+      <div class="icon-acougue">🥩</div>
+      <h2 id="standby-titulo">OFERTAS DO DIA</h2>
+      <p id="standby-texto">Aguardando o lançamento de promoções...</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+    import { UNIDADES } from './catalogo.js';
+
+    // O link da TV é /tv/<token>
+    const partes = location.pathname.split('/').filter(Boolean);
+    const posTv = partes.lastIndexOf('tv');
+    const token = new URLSearchParams(location.search).get('t') || (posTv >= 0 ? partes[posTv + 1] : '') || '';
+
+    let listaPromocoes = [];
+    let indiceAtual = 0;
+    let ultimoJson = '';
+
+    const wrapper = document.getElementById('wrapper-promocao');
+    const standby = document.getElementById('standby-box');
+    const tvTitulo = document.getElementById('tv-titulo');
+
+    function mostrarStandby(titulo, texto, tituloTopo) {
+      wrapper.style.display = 'none';
+      standby.style.display = 'flex';
+      document.getElementById('standby-titulo').textContent = titulo;
+      document.getElementById('standby-texto').textContent = texto;
+      tvTitulo.textContent = tituloTopo;
+    }
+
+    function exibirPromocaoAtual() {
+      if (listaPromocoes.length === 0) {
+        mostrarStandby('OFERTAS DO DIA', 'Aguardando o lançamento de promoções...', 'VITRINE DIGITAL');
+        return;
+      }
+
+      standby.style.display = 'none';
+      wrapper.style.display = 'flex';
+
+      if (indiceAtual >= listaPromocoes.length) indiceAtual = 0;
+
+      const item = listaPromocoes[indiceAtual];
+      tvTitulo.textContent = (item.corte || '').toUpperCase();
+      document.getElementById('tv-img-carne').src = `assets/carnes/${item.carne}`;
+      document.getElementById('tv-unidade').textContent = (UNIDADES[item.unidade] || UNIDADES.kg).label;
+      document.getElementById('tv-preco').textContent = Number(item.preco).toFixed(2).replace('.', ',');
+    }
+
+    async function buscarOfertas() {
+      try {
+        const { data, error } = await supabase.rpc('get_tv', { p_token: token });
+        if (error) throw error;
+
+        if (!data) {
+          mostrarStandby('LINK INVÁLIDO', 'Confira o endereço da TV no seu painel.', 'VITRINE DIGITAL');
+          return;
+        }
+
+        const json = JSON.stringify(data.ofertas);
+        if (json !== ultimoJson) {
+          ultimoJson = json;
+          listaPromocoes = data.ofertas;
+          indiceAtual = 0;
+          exibirPromocaoAtual();
+        }
+      } catch (e) {
+        // Sem internet: mantém o que já está na tela e tenta de novo
+        console.error(e);
+      }
+    }
+
+    // Atualiza a cada 10 segundos
+    buscarOfertas();
+    setInterval(buscarOfertas, 10000);
+
+    // Alterna entre as ofertas a cada 20 segundos
+    setInterval(() => {
+      if (listaPromocoes.length > 1) {
+        indiceAtual = (indiceAtual + 1) % listaPromocoes.length;
+        exibirPromocaoAtual();
+      }
+    }, 20000);
+  </script>
+</body>
+</html>

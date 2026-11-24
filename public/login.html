@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // Define a base dos caminhos (funciona em /tv/TOKEN, /painel, /login e também em /public/...)
+    (function () {
+      var p = location.pathname, i = p.indexOf('/tv/');
+      var b = i >= 0 ? p.slice(0, i + 1) : p.replace(/[^\/]*$/, '');
+      document.write('<base href="' + b + '">');
+    })();
+  </script>
+  <title>Entrar - Vitrine Digital</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/color/180/steak.png">
+</head>
+<body class="body-painel">
+
+  <div class="controle-remoto">
+    <div class="topo-controle">
+      <div class="status-box">
+        <span class="icon-login">🥩</span>
+        <span class="status-texto">VITRINE DIGITAL</span>
+      </div>
+    </div>
+
+    <form id="form-login" class="form-login">
+      <div class="bloco-controle">
+        <span class="label-controle">E-MAIL</span>
+        <div class="display-preco-input">
+          <input type="email" id="email" placeholder="seu@email.com" autocomplete="username" required>
+        </div>
+      </div>
+
+      <div class="bloco-controle">
+        <span class="label-controle">SENHA</span>
+        <div class="display-preco-input">
+          <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+      </div>
+
+      <p id="msg-erro" class="msg-erro"></p>
+
+      <button type="submit" id="btn-entrar" class="btn-disparar">ENTRAR</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) location.replace('painel');
+
+    const form = document.getElementById('form-login');
+    const msg = document.getElementById('msg-erro');
+    const btn = document.getElementById('btn-entrar');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'ENTRANDO...';
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('senha').value
+      });
+
+      if (error) {
+        msg.textContent = 'E-mail ou senha incorretos.';
+        btn.disabled = false;
+        btn.textContent = 'ENTRAR';
+        return;
+      }
+      location.replace('painel');
+    });
+  </script>
+</body>
+</html>
