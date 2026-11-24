@@ -67,7 +67,7 @@
   </div>
 
   <div id="aviso-sem-loja" class="controle-remoto" style="display:none">
-    <p class="sem-itens">Sua conta ainda não está ligada a um açougue. Fale com o suporte.</p>
+    <p class="sem-itens" id="msg-sem-loja">Sua conta ainda não está ligada a um açougue. Fale com o suporte.</p>
     <button class="btn-sair" id="btn-sair-2">Sair</button>
   </div>
 
@@ -86,12 +86,17 @@
     document.getElementById('btn-sair-2').addEventListener('click', sair);
 
     // A regra de segurança do banco só devolve a loja do próprio usuário
-    const { data: loja } = await supabase
+    const { data: loja, error: erroLoja } = await supabase
       .from('lojas')
       .select('id, nome, tv_token')
       .maybeSingle();
 
     if (!loja) {
+      if (erroLoja) {
+        console.error(erroLoja);
+        document.getElementById('msg-sem-loja').textContent =
+          'Não foi possível carregar sua loja: ' + erroLoja.message;
+      }
       document.getElementById('aviso-sem-loja').style.display = 'flex';
       throw new Error('Usuário sem loja');
     }
