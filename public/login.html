@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <form id="form-login" class="form-login">
+    <form id="form-login" class="form-login" onsubmit="return false">
       <div class="bloco-controle">
         <span class="label-controle">E-MAIL</span>
         <div class="display-preco-input">
@@ -48,17 +48,18 @@
   </div>
 
   <script type="module">
-    import { supabase } from './config.js';
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) location.replace('painel');
-
     const form = document.getElementById('form-login');
     const msg = document.getElementById('msg-erro');
     const btn = document.getElementById('btn-entrar');
+    let supabase = null;
 
+    // O botão já funciona antes de qualquer outra coisa carregar
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!supabase) {
+        msg.textContent = 'O sistema não carregou. Atualize a página (Ctrl+F5).';
+        return;
+      }
       msg.textContent = '';
       btn.disabled = true;
       btn.textContent = 'ENTRANDO...';
@@ -69,13 +70,25 @@
       });
 
       if (error) {
-        msg.textContent = 'E-mail ou senha incorretos.';
+        console.error(error);
+        msg.textContent = error.message === 'Invalid login credentials'
+          ? 'E-mail ou senha incorretos.'
+          : 'Erro: ' + error.message;
         btn.disabled = false;
         btn.textContent = 'ENTRAR';
         return;
       }
       location.replace('painel');
     });
+
+    try {
+      ({ supabase } = await import('./config.js'));
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) location.replace('painel');
+    } catch (err) {
+      console.error(err);
+      msg.textContent = 'Erro ao carregar o sistema: ' + (err && err.message ? err.message : err);
+    }
   </script>
 </body>
 </html>
